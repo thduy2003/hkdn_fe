@@ -6,6 +6,7 @@ import { Navigate, useRoutes } from 'react-router-dom'
 
 export default function useRoutesElements() {
   const { isAuthenticated } = useContext<AppContextType>(AppContext)
+  console.log(isAuthenticated)
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return isAuthenticated ? children : <Navigate to='/login' />
   }
