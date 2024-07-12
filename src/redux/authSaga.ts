@@ -14,8 +14,8 @@ export interface Account {
 function* handleLogin(action: PayloadAction<Account>) {
   try {
     const res: LoginResponse = yield call(authApi.login, action.payload)
-    setAccessTokenToLS(res.access_token)
-    setRefreshTokenToLS(res.refresh_token)
+    setAccessTokenToLS(res.data.access_token)
+    setRefreshTokenToLS(res.data.refresh_token)
     // yield put(authActions.loginSuccess(res))
     yield call(history.push, `/`)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

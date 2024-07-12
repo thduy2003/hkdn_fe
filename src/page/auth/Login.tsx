@@ -1,19 +1,42 @@
 
 
+import { authApi } from '@/api/auth.api'
 import FloatInput from '@/components/FloatInput'
-import { Button, Form, FormProps, Input, Typography } from 'antd'
+import { AppContext, AppContextType } from '@/contexts/app.context'
+import { Account } from '@/redux/authSaga'
+import { useMutation } from '@tanstack/react-query'
+import { Button, Form, Typography } from 'antd'
+import { useContext, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 const { Text } = Typography
 type FieldType = {
-  username?: string
+  email?: string
   password?: string
 }
-function Login() {
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values)
-  }
+export default function Login() {
+  const navigate = useNavigate();
+  const { setIsAuthenticated } = useContext<AppContextType>(AppContext);
+  const [isLoading, setIsLoading] = useState(false);
+  const loginMutation = useMutation({
+    mutationKey: ['login'],
+    mutationFn: (data: Account) => authApi.login(data)
+  })
+  const onSubmit = async (data: Account) => {
+     setIsLoading(true);
+     loginMutation.mutate(data, {
+      onSuccess: () => {
+         setIsLoading(false)
+         setIsAuthenticated(true);
+         navigate('/')
+         toast.success('Login successfully')
+      },
+      onError: (error) => {
+        setIsLoading(false)
 
-  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
-    console.log('Failed:', errorInfo)
+        console.log('error', error);
+      }
+     })
   }
   return (
     <div className='w-full min-h-screen flex items-stretch justify-center bg-[#f2f2f2]'>
@@ -27,11 +50,10 @@ function Login() {
          
           name='basic'
           initialValues={{ remember: true }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
+          onFinish={onSubmit}
           autoComplete='off'
         >
-          <Form.Item<FieldType> name='username' rules={[{ required: true, message: 'Please input your username!' }]}>
+          <Form.Item<FieldType> name='email' rules={[{ required: true, message: 'Please input your email!' }]}>
             <FloatInput label='Email' placeholder='Email' height={78}/>
           </Form.Item>
 
@@ -40,7 +62,7 @@ function Login() {
           </Form.Item>
 
           <Form.Item>
-            <Button className='w-full h-[50px] uppercase' type='primary' htmlType='submit'>
+            <Button loading={isLoading} className='w-full h-[50px] uppercase' type='primary' htmlType='submit'>
               Đăng nhập
             </Button>
           </Form.Item>
@@ -49,4 +71,4 @@ function Login() {
     </div>
   )
 }
-export default Login
+
