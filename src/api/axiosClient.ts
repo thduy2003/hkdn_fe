@@ -1,21 +1,22 @@
 import HttpStatusCode from '@/constants/http'
-// import { useAppDispatch } from '@/redux/hooks'
-// import { appAction } from '@/redux/store/appSlice'
 import {
   clearLS,
   getAccessTokenFromLS,
   getTokenExpiredFromLS,
   setAccessTokenToLS,
+  setProfileToLS,
   setTokenExpiredToLS
 } from '@/utils/storage'
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+import axios, { AxiosInstance } from 'axios'
 import config from './../configs/index'
 import { toast } from 'sonner'
 import moment from 'moment'
+import { User } from '@/interface/user'
 
 export interface LoginResponse {
   expired_at: number
   access_token: string
+  user: User
 }
 
 export class Http {
@@ -32,7 +33,7 @@ export class Http {
       withCredentials: true,
       timeout: 5000,
       headers: {
-        'Access-Control-Allow-Origin': 'http://localhost:4000/api',
+        'Access-Control-Allow-Origin': import.meta.env.VITE_API_URL,
         'Content-Type': 'application/json',
         'expire-access-token': 60 * 15, // 15 phút
         'expire-refresh-token': 60 * 60 * 24 * 7 // 160 ngày
@@ -90,6 +91,7 @@ export class Http {
           this.AccessToken = data.access_token
           setAccessTokenToLS(this.AccessToken)
           setTokenExpiredToLS(data.expired_at)
+          setProfileToLS(data.user)
         } else if (url === '/auth/logout/') {
           this.AccessToken = ''
           clearLS()

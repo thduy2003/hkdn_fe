@@ -1,3 +1,4 @@
+import SideBar from '@/components/shared/SideBar'
 import { AppContext, AppContextType } from '@/contexts/app.context'
 import Login from '@/page/auth/Login'
 import Register from '@/page/auth/Register'
@@ -17,11 +18,17 @@ export default function useRoutesElements() {
     { path: '/register', element: isAuthenticated ? <Navigate to='/' /> : <Register /> },
     {
       path: '/',
-      element: (
-        <ProtectedRoute>
-          <Home/>
-        </ProtectedRoute>
-      )
+      element: <SideBar />,
+      children: [
+        {
+          index: true,
+          element: (
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          )
+        }
+      ]
     },
     { path: '*', element: <h1>404</h1> }
   ])
