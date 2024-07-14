@@ -14,3 +14,7 @@ export interface RouteLazy {
   element: LazyLoadElement
   children?: RouteLazy[]
 }
+export interface DataResponse<T> {
+  data: T
+  statusCode: number
+}

@@ -96,7 +96,7 @@ export class Http {
           this.AccessToken = ''
           clearLS()
         }
-        return response
+        return response.data
       },
       async (error) => {
         // Chỉ toast lỗi không phải 422 và 401

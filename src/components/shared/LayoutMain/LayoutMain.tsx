@@ -1,27 +1,26 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import { Button, Layout, Menu, MenuProps, theme } from 'antd'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { getProfileFromLS } from '@/utils/storage'
 import { routes } from './menu-item'
-import { User } from '@/interface/user'
 import { RouteInfo } from './sidebar.metadata'
 import { AppstoreOutlined } from '@ant-design/icons'
+import { AppContext, AppContextType } from '@/contexts/app.context'
 const { Header, Sider, Content } = Layout
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false)
   const location = useLocation()
+  const { profile } = useContext<AppContextType>(AppContext)
 
   const [menuItems, setMenuItems] = useState<MenuProps['items']>([])
   const [activeMenu, setActiveMenu] = useState('')
-  const currentUser: User = getProfileFromLS()
 
   React.useEffect(() => {
-    if (currentUser) {
+    if (profile) {
       const result: RouteInfo[] = []
       routes.forEach((route) => {
-        if (route.allowedGroups?.indexOf(currentUser.role) !== -1) {
+        if (route.allowedGroups?.indexOf(profile.role) !== -1) {
           result.push(route)
         }
       })
@@ -34,7 +33,7 @@ const App: React.FC = () => {
       })
       setMenuItems(full)
     }
-  }, [currentUser])
+  }, [profile])
   React.useEffect(() => {
     setActiveMenu(location.pathname)
   }, [location])

@@ -1,6 +1,7 @@
 import { authApi } from '@/api/auth.api'
 import FloatInput from '@/components/FloatInput'
 import { AppContext, AppContextType } from '@/contexts/app.context'
+import { UserRole } from '@/interface/user'
 import { Account } from '@/redux/authSaga'
 import { useMutation } from '@tanstack/react-query'
 import { Button, Form, Typography } from 'antd'
@@ -14,7 +15,7 @@ type FieldType = {
 }
 export default function Login() {
   const navigate = useNavigate()
-  const { setIsAuthenticated } = useContext<AppContextType>(AppContext)
+  const { setIsAuthenticated, setProfile } = useContext<AppContextType>(AppContext)
   const [isLoading, setIsLoading] = useState(false)
   const loginMutation = useMutation({
     mutationKey: ['login'],
@@ -23,10 +24,22 @@ export default function Login() {
   const onSubmit = async (data: Account) => {
     setIsLoading(true)
     loginMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         setIsLoading(false)
         setIsAuthenticated(true)
-        navigate('/')
+        setProfile(data.data.user)
+        switch (data.data.user.role) {
+          case UserRole.Student:
+            navigate('/admin/students')
+            break
+          case UserRole.Teacher:
+            navigate('/admin/teachers')
+            break
+          default:
+            navigate('/admin')
+            break
+        }
+
         toast.success('Login successfully')
       },
       onError: (error) => {
