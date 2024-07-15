@@ -29,7 +29,7 @@ export default function Login() {
         setIsAuthenticated(true)
         setProfile(data.data.user)
         switch (data.data.user.role) {
-          case UserRole.Student:
+          case UserRole.Employee:
             navigate('/admin/students')
             break
           case UserRole.Teacher:

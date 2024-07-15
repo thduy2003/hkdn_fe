@@ -18,3 +18,16 @@ export interface DataResponse<T> {
   data: T
   statusCode: number
 }
+export interface PageMetadata {
+  page: number,
+  limit: number,
+  itemCount: number,
+  pageCount: number,
+  hasPreviousPage: false,
+  hasNextPage: false
+}
+export interface PageData<T> {
+  total: number
+  data: T[]
+  meta: PageMetadata
+}

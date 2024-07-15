@@ -1,5 +1,5 @@
-import SideBar from '@/components/shared/LayoutMain'
-import { routes } from '@/components/shared/LayoutMain/menu-item'
+import SideBar from '@/layouts/LayoutMain'
+import { routes } from '@/layouts/LayoutMain/menu-item'
 import NotFound from '@/components/shared/NotFound'
 import NotPermitted from '@/components/shared/NotPermitted'
 import { AppContext, AppContextType } from '@/contexts/app.context'

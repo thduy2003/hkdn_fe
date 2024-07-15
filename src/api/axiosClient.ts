@@ -12,6 +12,7 @@ import config from './../configs/index'
 import { toast } from 'sonner'
 import moment from 'moment'
 import { User } from '@/interface/user'
+import { DataResponse } from '@/interface/app'
 
 export interface LoginResponse {
   expired_at: number
@@ -48,14 +49,12 @@ export class Http {
             if (!this.isRefreshToken) {
               this.isRefreshToken = true
               try {
-                const data = await this.instance.get<{
-                  data: LoginResponse
-                }>('/auth/refresh-token/')
+                const data = await this.instance.get<LoginResponse>('/auth/refresh-token/')
 
                 if (data.data) {
-                  this.AccessToken = data.data.data.access_token
+                  this.AccessToken = data.data.access_token
                   setAccessTokenToLS(this.AccessToken)
-                  setTokenExpiredToLS(data.data.data.expired_at)
+                  setTokenExpiredToLS(data.data.expired_at)
                   this.isRefreshToken = false
                   this.isTokenExpired = false
                 }

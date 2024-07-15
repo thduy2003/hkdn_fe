@@ -12,7 +12,7 @@ export const routes: RouteInfo[] = [
     path: '/admin/students',
     title: 'Student',
     icon: 'zmdi zmdi-view-dashboard',
-    allowedGroups: [UserRole.Student]
+    allowedGroups: [UserRole.Employee]
   },
   {
     path: '/admin/teachers',
