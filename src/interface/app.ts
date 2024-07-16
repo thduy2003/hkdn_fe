@@ -31,3 +31,14 @@ export interface PageData<T> {
   data: T[]
   meta: PageMetadata
 }
+export interface ModalProps {
+  open: boolean
+  setOpen: React.Dispatch<React.SetStateAction<boolean>> 
+}
+export interface ModalComponentProps {
+  open: boolean
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  formContentRender?: () => React.ReactNode
+  customFooter?: () => React.ReactNode
+  customTitle?: () => React.ReactNode
+}

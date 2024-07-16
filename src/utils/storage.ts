@@ -1,4 +1,4 @@
-import { User } from '@/interface/user'
+import { IUser } from '@/interface/user'
 
 export const LocalStorageEventTarget = new EventTarget()
 
@@ -13,7 +13,7 @@ export const setRefreshTokenToLS = (refresh_token: string) => {
   localStorage.setItem('refresh_token', refresh_token)
 }
 
-export const setProfileToLS = (profile: User) => {
+export const setProfileToLS = (profile: IUser) => {
   localStorage.setItem('profile', JSON.stringify(profile))
 }
 

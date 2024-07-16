@@ -11,13 +11,12 @@ import axios, { AxiosInstance } from 'axios'
 import config from './../configs/index'
 import { toast } from 'sonner'
 import moment from 'moment'
-import { User } from '@/interface/user'
-import { DataResponse } from '@/interface/app'
+import { IUser } from '@/interface/user'
 
 export interface LoginResponse {
   expired_at: number
   access_token: string
-  user: User
+  user: IUser
 }
 
 export class Http {

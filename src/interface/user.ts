@@ -3,9 +3,16 @@ export enum UserRole {
   Employee = 'employee',
   Student = 'student'
 }
-export interface User {
+export interface IUser {
   id: number
   fullName: string
   email: string
   role: UserRole
+}
+export interface UserListConfig {
+  page?: number
+  page_size?: number
+  order?: 'asc' | 'desc'
+  keyword?: string
+  role?: UserRole
 }

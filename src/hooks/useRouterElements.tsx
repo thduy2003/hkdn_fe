@@ -6,10 +6,11 @@ import { AppContext, AppContextType } from '@/contexts/app.context'
 import Login from '@/page/auth/Login'
 import Register from '@/page/auth/Register'
 import Home from '@/page/Home'
-import Student from '@/page/Student'
-import Teacher from '@/page/Teacher'
 import { useContext } from 'react'
 import { Navigate, useLocation, useRoutes } from 'react-router-dom'
+import Student from '@/page/student'
+import Teacher from '@/page/teacher'
+import ClassEnrollment from '@/page/class-enrollment'
 
 export default function useRoutesElements() {
   const { isAuthenticated, profile } = useContext<AppContextType>(AppContext)
@@ -46,6 +47,14 @@ export default function useRoutesElements() {
           element: (
             <ProtectedRoute>
               <Student />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: 'class-enrollment',
+          element: (
+            <ProtectedRoute>
+              <ClassEnrollment />
             </ProtectedRoute>
           )
         },

@@ -15,6 +15,12 @@ export const routes: RouteInfo[] = [
     allowedGroups: [UserRole.Employee]
   },
   {
+    path: '/admin/class-enrollment',
+    title: 'Class Enrollment',
+    icon: 'zmdi zmdi-view-dashboard',
+    allowedGroups: [UserRole.Employee]
+  },
+  {
     path: '/admin/teachers',
     title: 'Teacher',
     icon: 'zmdi zmdi-view-dashboard',
