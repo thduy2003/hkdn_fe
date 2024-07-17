@@ -1,6 +1,4 @@
-import { classEnrollmentApi } from '@/api/class-enrollment.api'
 import DataTable from '@/components/DataTable'
-import { ClassEnrollmentListConfig } from '@/interface/class-enrollment'
 import { useQuery } from '@tanstack/react-query'
 import { Button, Col, Row, Select, TablePaginationConfig } from 'antd'
 import React, { useState } from 'react'
@@ -8,29 +6,24 @@ import { columns } from './table-column'
 import { ColumnsType } from 'antd/es/table'
 import { AnyObject } from 'antd/es/_util/type'
 import ClassEnrollmentModal from './modal'
-const { Option } = Select;
+import { classApi } from '@/api/class.api'
+const { Option } = Select
 
 export default function ClassEnrollment() {
   const [currentPage, setCurrentPage] = useState(1)
-  const [openModal, setOpenModal] = useState(false);
+  const [openModal, setOpenModal] = useState(false)
 
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [selectedClass, setSelectedClass] = useState(1);
-  const queryConfig: ClassEnrollmentListConfig = {
-    page_size: pageSize,
-    page: currentPage,
-    classId: selectedClass,
-    ...(searchTerm ? { keyword: searchTerm } : {})
-  }
+  const [selectedClass, setSelectedClass] = useState(1)
 
   const {
     data: usersData,
     isLoading,
     refetch
   } = useQuery({
-    queryKey: ['class-enrollment', currentPage, pageSize],
-    queryFn: () => classEnrollmentApi.getAll(queryConfig)
+    queryKey: ['class-detail'],
+    queryFn: () => classApi.getClassDetail(selectedClass)
   })
 
   const handleTableChange = (pagination: TablePaginationConfig) => {
@@ -51,7 +44,7 @@ export default function ClassEnrollment() {
       refetch()
     }, 0)
   }
- 
+
   const customSearchFrom = () => {
     return (
       <Row gutter={[16, 16]} className='items-center'>
@@ -79,26 +72,33 @@ export default function ClassEnrollment() {
   }
   return (
     <div>
-      <ClassEnrollmentModal open={openModal} setOpen={setOpenModal}/>
+      <ClassEnrollmentModal open={openModal} setOpen={setOpenModal} />
       <DataTable
         valueSearch={searchTerm}
         onChangeSearch={handleChange}
         onReset={handleReset}
         onSearch={handleSearch}
         columns={columns() as ColumnsType<AnyObject> | undefined}
-        rowKey={'createdAt'}
-        dataSource={usersData?.data?.data}
+        rowKey={'id'}
+        dataSource={usersData?.data.classEnrollments}
         isLoading={isLoading}
         currentPage={currentPage}
         pageSize={pageSize}
-        total={usersData?.data?.total}
+        total={usersData?.data?.classEnrollments.length}
         showSizeChanger={true}
         pageSizeOptions={['6', '10', '20', '50']}
         onChange={handleTableChange}
         addButtonRender={() => {
-            return <Button onClick={() => {setOpenModal(true)}} type='primary'>
-                Thêm mới
+          return (
+            <Button
+              onClick={() => {
+                setOpenModal(true)
+              }}
+              type='primary'
+            >
+              Thêm mới
             </Button>
+          )
         }}
         customSearchFrom={customSearchFrom}
       />
