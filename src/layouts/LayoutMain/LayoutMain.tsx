@@ -12,6 +12,8 @@ const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false)
   const location = useLocation()
   const { profile } = useContext<AppContextType>(AppContext)
+  const [width, setWidth] = useState<string>('85%')
+  const [marginLeft, setMarginLeft] = useState<string>('15%')
 
   const [menuItems, setMenuItems] = useState<MenuProps['items']>([])
   const [activeMenu, setActiveMenu] = useState('')
@@ -48,6 +50,15 @@ const App: React.FC = () => {
         breakpoint='lg'
         onBreakpoint={(broken) => {
           setCollapsed(broken)
+          setWidth(broken ? '100%' : '85%')
+          setMarginLeft(broken ? '0' : '15%')
+        }}
+        width='15%'
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0
         }}
         collapsedWidth='0'
         collapsible
@@ -61,7 +72,13 @@ const App: React.FC = () => {
           onClick={(e) => setActiveMenu(e.key)}
         />
       </Sider>
-      <Layout>
+      <Layout
+        style={{
+          width: width,
+          overflow: 'auto',
+          marginLeft: marginLeft
+        }}
+      >
         <Header style={{ padding: 0, background: colorBgContainer }}>
           <Button
             type='text'

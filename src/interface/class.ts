@@ -1,4 +1,5 @@
 import { IClassEnrollment } from './class-enrollment'
+import { IExamResult } from './exam-result'
 import { IUser } from './user'
 
 export interface IClass {
@@ -8,4 +9,5 @@ export interface IClass {
   endDate: Date
   teacher?: IUser
   classEnrollments?: IClassEnrollment[]
+  examResults?: IExamResult[]
 }

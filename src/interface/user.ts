@@ -1,5 +1,6 @@
-import { BaseConfig } from "./app"
-import { IClassEnrollment } from "./class-enrollment"
+import { BaseConfig } from './app'
+import { IClassEnrollment } from './class-enrollment'
+import { IExamResult } from './exam-result'
 
 export enum UserRole {
   Teacher = 'teacher',
@@ -13,12 +14,13 @@ export interface IUser {
   role: UserRole
 }
 export interface IUserList {
-  id: number 
-  fullName: string 
-  email?: string 
+  id: number
+  fullName: string
+  email?: string
   role?: string
   classEnrollments?: IClassEnrollment[]
+  examResults?: IExamResult[]
 }
-export interface UserListConfig extends BaseConfig{
+export interface UserListConfig extends BaseConfig {
   role?: UserRole
 }
