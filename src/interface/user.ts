@@ -1,3 +1,6 @@
+import { BaseConfig } from "./app"
+import { IClassEnrollment } from "./class-enrollment"
+
 export enum UserRole {
   Teacher = 'teacher',
   Employee = 'employee',
@@ -9,10 +12,13 @@ export interface IUser {
   email: string
   role: UserRole
 }
-export interface UserListConfig {
-  page?: number
-  page_size?: number
-  order?: 'asc' | 'desc'
-  keyword?: string
+export interface IUserList {
+  id: number 
+  fullName: string 
+  email?: string 
+  role?: string
+  classEnrollments?: IClassEnrollment[]
+}
+export interface UserListConfig extends BaseConfig{
   role?: UserRole
 }

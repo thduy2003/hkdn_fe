@@ -1,4 +1,3 @@
-import { classEnrollmentApi } from '@/api/class-enrollment.api'
 import { userApi } from '@/api/user.api'
 import ModalComponent from '@/components/Modal'
 import useDebounceState from '@/hooks/useDebounce'
@@ -16,6 +15,8 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
   const [openStudentModal, setOpenStudentModal] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, debouncedSearchTerm, setSearchTerm] = useDebounceState('', 300)
+  const [form] = Form.useForm();
+
   const queryClient = useQueryClient()
 
   const queryConfig: UserListConfig = {
@@ -31,7 +32,7 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
   const enrollClass = useMutation({
     mutationKey: ['enrollClass'],
     mutationFn: (value: IClassEnrollment) =>
-      classEnrollmentApi.enrollClass({ classId: value.classId, studentId: value.studentId })
+      userApi.enrollClass({ classId: value.classId, studentId: value.studentId })
   })
 
   const onSubmitForm = (value: IClassEnrollment) => {
@@ -40,6 +41,7 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
         toast.success('Enrolled class successfully')
         queryClient.invalidateQueries(['class-enrollment'] as InvalidateQueryFilters)
         setOpen(false)
+        form.resetFields()
       },
       onError: (error: unknown) => {
         console.log(error)
@@ -49,11 +51,15 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
   const customTitle = () => {
     return <p>Thêm mới học sinh vào lớp</p>
   }
-
+  const onCancel = () => {
+    form.resetFields()
+    setOpen(false)
+  }
   const formContentRender = () => {
     return (
       <Form
         name='basic'
+        form={form}
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 24 }}
         style={{ maxWidth: 600 }}
@@ -129,6 +135,6 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
     )
   }
   return (
-    <ModalComponent customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen} />
+    <ModalComponent customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen} onCancel={onCancel} />
   )
 }

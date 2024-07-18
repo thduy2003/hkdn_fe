@@ -11,6 +11,7 @@ import { Navigate, useLocation, useRoutes } from 'react-router-dom'
 import Student from '@/page/student'
 import Teacher from '@/page/teacher'
 import ClassEnrollment from '@/page/class-enrollment'
+import ClassExamResult from '@/page/class-exam-result'
 
 export default function useRoutesElements() {
   const { isAuthenticated, profile } = useContext<AppContextType>(AppContext)
@@ -55,6 +56,14 @@ export default function useRoutesElements() {
           element: (
             <ProtectedRoute>
               <ClassEnrollment />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: 'class-exam-result',
+          element: (
+            <ProtectedRoute>
+              <ClassExamResult />
             </ProtectedRoute>
           )
         },

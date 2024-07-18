@@ -1,5 +1,5 @@
 import DataTable from '@/components/DataTable'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Button, Col, Row, Select, TablePaginationConfig } from 'antd'
 import React, { useState } from 'react'
 import { columns } from './table-column'
@@ -7,6 +7,9 @@ import { ColumnsType } from 'antd/es/table'
 import { AnyObject } from 'antd/es/_util/type'
 import ClassEnrollmentModal from './modal'
 import { classApi } from '@/api/class.api'
+import { UserListConfig } from '@/interface/user'
+import { userApi } from '@/api/user.api'
+import { toast } from 'sonner'
 const { Option } = Select
 
 export default function ClassEnrollment() {
@@ -16,13 +19,20 @@ export default function ClassEnrollment() {
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [selectedClass, setSelectedClass] = useState(1)
+  const queryConfig: UserListConfig = { page_size: pageSize, page: currentPage, ...(searchTerm ? { keyword: searchTerm } : {})}
 
   const {
-    data: usersData,
+    data: studentsData,
     isLoading,
     refetch
   } = useQuery({
-    queryKey: ['class-detail'],
+    queryKey: ['students-in-class', selectedClass],
+    queryFn: () => classApi.getStudentsInClass(selectedClass, queryConfig)
+  })
+  const {
+    data: classData,
+  } = useQuery({
+    queryKey: ['class-detail', selectedClass],
     queryFn: () => classApi.getClassDetail(selectedClass)
   })
 
@@ -44,7 +54,23 @@ export default function ClassEnrollment() {
       refetch()
     }, 0)
   }
+  const enrollClass = useMutation({
+    mutationKey: ['unenroll-class'],
+    mutationFn: (studentId: number) =>
+      userApi.unenrollClass({ classId: selectedClass, studentId: studentId })
+  })
 
+  const onDelete = (studentId: number) => {
+    enrollClass.mutate(studentId, {
+      onSuccess: () => {
+        toast.success('UnEnrolled class successfully')
+        refetch()
+      },
+      onError: (error: unknown) => {
+        console.log(error)
+      }
+    })
+  }
   const customSearchFrom = () => {
     return (
       <Row gutter={[16, 16]} className='items-center'>
@@ -54,9 +80,6 @@ export default function ClassEnrollment() {
             // placeholder="Select a option and change input text above"
             onChange={(val) => {
               setSelectedClass(val)
-              setTimeout(() => {
-                refetch()
-              }, 0)
             }}
             // allowClear
             className='w-full'
@@ -78,13 +101,13 @@ export default function ClassEnrollment() {
         onChangeSearch={handleChange}
         onReset={handleReset}
         onSearch={handleSearch}
-        columns={columns() as ColumnsType<AnyObject> | undefined}
+        columns={columns({onDelete}) as ColumnsType<AnyObject> | undefined}
         rowKey={'id'}
-        dataSource={usersData?.data.classEnrollments}
+        dataSource={studentsData?.data?.data}
         isLoading={isLoading}
         currentPage={currentPage}
         pageSize={pageSize}
-        total={usersData?.data?.classEnrollments.length}
+        total={studentsData?.data.total}
         showSizeChanger={true}
         pageSizeOptions={['6', '10', '20', '50']}
         onChange={handleTableChange}
@@ -102,6 +125,8 @@ export default function ClassEnrollment() {
         }}
         customSearchFrom={customSearchFrom}
       />
+      <div>Teacher: <strong>{classData?.data?.teacher?.fullName}</strong></div>
+      <div>Class Name: <strong>{classData?.data?.name}</strong></div>
     </div>
   )
 }

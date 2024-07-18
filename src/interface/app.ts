@@ -18,6 +18,12 @@ export interface DataResponse<T> {
   data: T
   statusCode: number
 }
+export interface BaseConfig {
+  page?: number
+  page_size?: number
+  order?: 'asc' | 'desc'
+  keyword?: string
+}
 export interface PageMetadata {
   page: number,
   limit: number,
@@ -31,6 +37,7 @@ export interface PageData<T> {
   data: T[]
   meta: PageMetadata
 }
+
 export interface ModalProps {
   open: boolean
   setOpen: React.Dispatch<React.SetStateAction<boolean>> 
@@ -41,4 +48,8 @@ export interface ModalComponentProps {
   formContentRender?: () => React.ReactNode
   customFooter?: () => React.ReactNode
   customTitle?: () => React.ReactNode
+  onCancel?: (e?: React.MouseEvent<HTMLButtonElement>) => void
+}
+export interface ColumnProps {
+  onDelete?: (value: number) => void
 }
