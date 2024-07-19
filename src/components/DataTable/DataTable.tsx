@@ -2,6 +2,7 @@ import { Button, Col, Input, Row, Spin, Table } from 'antd'
 import { AnyObject } from 'antd/es/_util/type'
 import { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import { ExpandableConfig } from 'antd/es/table/interface'
+import './DataTable.css'
 export interface DataTableProps<DataType> {
   columns: ColumnsType<AnyObject> | undefined
   dataSource: AnyObject[] | undefined
@@ -112,6 +113,8 @@ export default function DataTable<DataType>({
         }}
         expandable={expandable ? (expandable as ExpandableConfig<AnyObject>) : undefined}
         scroll={scroll ? scroll : undefined}
+        rowClassName={'bg-[#abe1f5] hover:bg-[#55cdf9]'}
+        rowHoverable = {false}
       />
     </div>
   )

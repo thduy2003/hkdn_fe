@@ -50,6 +50,7 @@ export interface ModalComponentProps {
   customTitle?: () => React.ReactNode
   onCancel?: (e?: React.MouseEvent<HTMLButtonElement>) => void
 }
-export interface ColumnProps {
+export interface ColumnProps<T = unknown> {
   onDelete?: (value: number) => void
+  onUpdate?: (value: T) => void
 }

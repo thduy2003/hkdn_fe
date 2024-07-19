@@ -7,6 +7,10 @@ export const authApi = {
     const url = '/auth/login/'
     return http.post(url, params)
   },
+  logout(): Promise<DataResponse<string>> {
+    const url = '/auth/logout/'
+    return http.post(url)
+  },
   register(params: Account): Promise<DataResponse<LoginResponse>> {
     const url = '/auth/register/'
     return http.post(url, params)

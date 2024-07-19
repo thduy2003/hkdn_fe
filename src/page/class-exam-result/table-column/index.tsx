@@ -1,8 +1,10 @@
+import { ColumnProps } from '@/interface/app'
 import { IUserList } from '@/interface/user'
-import { Space, TableProps } from 'antd'
+import { Button, Space, TableProps } from 'antd'
 import moment from 'moment'
+import { EnterResultModalProps } from '../modal/EnterResult.modal'
 
-export const columns = (): TableProps<IUserList>['columns'] => {
+export const columns = ({onUpdate}: ColumnProps<EnterResultModalProps>): TableProps<IUserList>['columns'] => {
   return [
     // {
     //   title: 'Class Name',
@@ -37,6 +39,18 @@ export const columns = (): TableProps<IUserList>['columns'] => {
           </Space>
         )
       }
-    }
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space size='middle'>
+          <Button onClick={() => onUpdate && onUpdate({
+            studentId: record.id,
+            studentName: record.fullName
+          })}>Enter result</Button>
+        </Space>
+      ),
+    },
   ]
 }

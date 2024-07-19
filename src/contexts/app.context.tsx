@@ -1,5 +1,5 @@
 import { ReactWithChild } from '@/interface/app'
-import { User } from '@/interface/user'
+import { IUser } from '@/interface/user'
 import { getAccessTokenFromLS, getProfileFromLS } from '@/utils/storage'
 import { createContext, useState } from 'react'
 
@@ -7,8 +7,8 @@ export interface AppContextType {
   isAuthenticated: boolean
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>
   reset: () => void
-  profile: User | null
-  setProfile: React.Dispatch<React.SetStateAction<User | null>>
+  profile: IUser | null
+  setProfile: React.Dispatch<React.SetStateAction<IUser | null>>
 }
 
 const initAppContext: AppContextType = {
@@ -23,7 +23,7 @@ export const AppContext = createContext<AppContextType>(initAppContext)
 
 const AppContextProvider = ({ children }: ReactWithChild) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initAppContext.isAuthenticated)
-  const [profile, setProfile] = useState<User | null>(initAppContext.profile)
+  const [profile, setProfile] = useState<IUser | null>(initAppContext.profile)
 
   const reset = () => {
     setIsAuthenticated(false)

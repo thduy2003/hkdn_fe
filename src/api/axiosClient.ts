@@ -45,7 +45,9 @@ export class Http {
           const expiredAt = getTokenExpiredFromLS()
           this.isTokenExpired = moment(new Date(Number(expiredAt) * 1000)).isBefore(new Date())
           if (this.isTokenExpired && config.url !== '/auth/refresh-token/') {
+            console.log('4')
             if (!this.isRefreshToken) {
+              console.log('3')
               this.isRefreshToken = true
               try {
                 const data = await this.instance.get<LoginResponse>('/auth/refresh-token/')
@@ -68,6 +70,7 @@ export class Http {
             while (this.isRefreshToken) {
               await new Promise((resolve) => {
                 setTimeout(() => {
+                  console.log('2')
                   return resolve(true)
                 }, 50)
               })
@@ -91,6 +94,7 @@ export class Http {
           setTokenExpiredToLS(data.expired_at)
           setProfileToLS(data.user)
         } else if (url === '/auth/logout/') {
+          console.log('1')
           this.AccessToken = ''
           clearLS()
         }

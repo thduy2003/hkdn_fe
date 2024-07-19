@@ -1,23 +1,60 @@
 import React, { useContext, useState } from 'react'
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
-import { Button, Layout, Menu, MenuProps, theme } from 'antd'
+import { Avatar, Button, Dropdown, Layout, Menu, MenuProps, Space, theme } from 'antd'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { routes } from './menu-item'
 import { RouteInfo } from './sidebar.metadata'
 import { AppstoreOutlined } from '@ant-design/icons'
 import { AppContext, AppContextType } from '@/contexts/app.context'
+import { useMutation } from '@tanstack/react-query'
+import { authApi } from '@/api/auth.api'
+import { toast } from 'sonner'
 const { Header, Sider, Content } = Layout
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false)
   const location = useLocation()
-  const { profile } = useContext<AppContextType>(AppContext)
+  const { profile, setIsAuthenticated, setProfile } = useContext<AppContextType>(AppContext)
+
   const [width, setWidth] = useState<string>('85%')
   const [marginLeft, setMarginLeft] = useState<string>('15%')
 
   const [menuItems, setMenuItems] = useState<MenuProps['items']>([])
   const [activeMenu, setActiveMenu] = useState('')
 
+  const logOutMutation = useMutation({
+    mutationFn: authApi.logout,
+  })
+  const handleLogout = () => {
+    logOutMutation.mutate(undefined, {
+      onSuccess: () => {
+        setIsAuthenticated(false)
+        setProfile(null)
+        toast.success('Logged out successfully', {
+          cancel: true
+        })
+      }
+    })
+  }
+  const onClick: MenuProps['onClick'] = ({ key }) => {
+    if(key === 'logout') {
+      handleLogout()
+    }
+  };
+  const itemsDropdown = [
+    {
+      label: <Link to={'/admin'}>Trang chủ</Link>,
+      key: 'home'
+    },
+    {
+      label: (
+        <button style={{ cursor: 'pointer' }}>
+          Logout
+        </button>
+      ),
+      key: 'logout'
+    }
+  ]
   React.useEffect(() => {
     if (profile) {
       const result: RouteInfo[] = []
@@ -42,16 +79,38 @@ const App: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken()
-
+  React.useEffect(() => {
+    setWidth(collapsed ? '100%' : '85%')
+    setMarginLeft(collapsed ? '0' : '15%')
+  }, [collapsed])
   return (
-    <Layout className='w-full h-screen'>
+    <>
+    <Header style={{ padding: 0, background: colorBgContainer, position: 'fixed', top: 0 }} className='flex justify-between w-full z-50'>
+          <Button
+            type='text'
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => {
+              setCollapsed(!collapsed)
+            }}
+            style={{
+              fontSize: '16px',
+              width: 64,
+              height: 64
+            }}
+          />
+          <Dropdown menu={{ items: itemsDropdown, onClick }} className='px-4'>
+            <Space style={{ cursor: 'pointer' }}>
+              Welcome {profile?.fullName}
+              <Avatar> {profile?.fullName?.split(' ')[profile?.fullName?.split(' ').length - 1]} </Avatar>
+            </Space>
+          </Dropdown>
+      </Header>
+    <Layout className='w-full h-screen pt-[64px]'>
       <Sider
         trigger={null}
         breakpoint='lg'
         onBreakpoint={(broken) => {
           setCollapsed(broken)
-          setWidth(broken ? '100%' : '85%')
-          setMarginLeft(broken ? '0' : '15%')
         }}
         width='15%'
         style={{
@@ -63,6 +122,7 @@ const App: React.FC = () => {
         collapsedWidth='0'
         collapsible
         collapsed={collapsed}
+        className='transition-all duration-400 ease-in-out'
       >
         <Menu
           theme='dark'
@@ -78,24 +138,13 @@ const App: React.FC = () => {
           overflow: 'auto',
           marginLeft: marginLeft
         }}
+        className='transition-all duration-400 ease-in-out'
       >
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <Button
-            type='text'
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64
-            }}
-          />
-        </Header>
         <Content
           style={{
             margin: '24px 16px',
             padding: 24,
-            minHeight: 280,
+            height: '100%',
             background: colorBgContainer,
             borderRadius: borderRadiusLG
           }}
@@ -103,7 +152,7 @@ const App: React.FC = () => {
           <Outlet />
         </Content>
       </Layout>
-    </Layout>
+    </Layout></>
   )
 }
 

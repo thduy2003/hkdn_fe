@@ -40,7 +40,10 @@ export default function Login() {
             break
         }
 
-        toast.success('Login successfully')
+        toast.success('Login successfully', {
+          cancel: true,
+          duration: 100
+        })
       },
       onError: (error) => {
         setIsLoading(false)
