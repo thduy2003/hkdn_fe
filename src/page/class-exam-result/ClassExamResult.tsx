@@ -11,11 +11,14 @@ import { ExpandedRowRender } from 'rc-table/lib/interface'
 import EnterResultModal from './modal'
 import { EnterResultModalProps } from './modal/EnterResult.modal'
 import { toast } from 'sonner'
+import FeedbackModal, { IDetailFeedbackData } from '../student-exam-result/modal/Feedback.modal'
+import { IExamResult } from '@/interface/exam-result'
 const { Option } = Select
 export default function ClassExamResult() {
   const [currentPage, setCurrentPage] = useState(1)
   const [studentsData, setStudentsData] = useState<IUserList[]>([])
-  const [openModal,setOpenModal] = useState<boolean>(false)
+  const [openModal, setOpenModal] = useState<boolean>(false)
+  const [openModalFeedback, setOpenModalFeedback] = useState<boolean>(false)
   const [dataUpdateResult, setDataUpdateResult] = useState<EnterResultModalProps>({
     studentId: undefined,
     className: '',
@@ -24,14 +27,26 @@ export default function ClassExamResult() {
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [selectedClass, setSelectedClass] = useState(1)
-  const [addedExamResult, setAddedExamResult] = useState<{examName: string, result: number, id: string, studentId: number}>({
+  const [addedExamResult, setAddedExamResult] = useState<{
+    examName: string
+    result: number
+    id: string
+    studentId: number
+  }>({
     examName: '',
     result: 0,
     id: '',
     studentId: 0
   })
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState<string>('');
+  const [detailFeedbackData, setDetailFeebackData] = useState<IDetailFeedbackData>({
+    examName: '',
+    examResultId: 1,
+    studentName: '',
+    examResultFeedbacks: []
+  })
+
+  const [editingKey, setEditingKey] = useState<number | undefined>(undefined)
+  const [editValue, setEditValue] = useState<string>('')
   const queryConfig: UserListConfig = {
     page_size: pageSize,
     page: currentPage,
@@ -79,13 +94,19 @@ export default function ClassExamResult() {
       classId: selectedClass
     })
   }
-  const onHandleUpdateSuccess = (data: {examName: string, result: number, id: string, studentId: number}) => {
+
+  //A function to retrieve the added data from the enter result modal, update the student data, and display the new data.
+
+  const onHandleUpdateSuccess = (data: { examName: string; result: number; id: string; studentId: number }) => {
     setAddedExamResult(data)
   }
+
+  //Handle updating the exam result after entering the result without re-calling the API to get the list.
+
   useEffect(() => {
     if (addedExamResult) {
-      setStudentsData(prevStudents =>
-        prevStudents.map(student => {
+      setStudentsData((prevStudents) =>
+        prevStudents.map((student) => {
           if (student.id === addedExamResult.studentId) {
             return {
               ...student,
@@ -97,15 +118,19 @@ export default function ClassExamResult() {
                   id: Number(addedExamResult.id)
                 }
               ]
-            };
+            }
           }
-          return student;
+          return student
         })
-      );
+      )
     }
   }, [addedExamResult])
-   useEffect(() => {
-    if(fetchStudentsData?.data?.data) {
+
+  /*Load student data in class into a state to copy the original data and add the exam result, thus creating new student data.
+   Directly modifying fetchStudentData with the exam result will not reference the original fetchStudentData, so React cannot recognize and update the UI.*/
+
+  useEffect(() => {
+    if (fetchStudentsData?.data?.data) {
       setStudentsData(fetchStudentsData?.data?.data)
     }
   }, [fetchStudentsData])
@@ -131,29 +156,28 @@ export default function ClassExamResult() {
       </Row>
     )
   }
-  const expandedRowRender = (record: IUserList) => {
+  const expandedRowRender = (userRecord: IUserList) => {
+    const handleEdit = (key: number, result: string) => {
+      setEditingKey(key)
+      setEditValue(result)
+    }
 
-    const handleEdit = (key: string, result: string) => {
-    setEditingKey(key);
-    setEditValue(result);
-    };
-
-    const handleSave = (key: string) => {
-    // Logic to save the edited result
-    // You may want to update the record in state or make an API call here
+    const handleSave = (key: number) => {
+      // Logic to save the edited result
+      // You may want to update the record in state or make an API call here
       const checkNumber = Number(editValue)
-      if(isNaN(checkNumber)) {
+      if (isNaN(checkNumber)) {
         toast.error('Invalid result. Please enter a valid result')
         return
       }
-      setEditingKey(null);
-    };
+      setEditingKey(undefined)
+    }
 
     const handleCancel = () => {
-    setEditingKey(null);
-    };
+      setEditingKey(undefined)
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const columns: TableColumnsType<any> = [
+    const columns: TableColumnsType<IExamResult> = [
       {
         title: 'Exam name',
         width: '300px',
@@ -166,42 +190,66 @@ export default function ClassExamResult() {
         dataIndex: 'result',
         width: '100px',
         key: 'result',
-        render: (_, record) => (
+        render: (_, record) =>
           editingKey === record.id ? (
-            <Input className='w-full' value={editValue} onChange={e => setEditValue(e.target.value)} />
+            <Input className='w-full' value={editValue} onChange={(e) => setEditValue(e.target.value)} />
           ) : (
             record.result
           )
-        )
       },
       {
         title: 'Action',
+        width: '100px',
         key: 'action',
-        render: (_, record) => (
+        render: (_, record) =>
           editingKey === record.id ? (
             <Space>
-              <Button onClick={() => handleSave(record.id)}>Save</Button>
+              <Button onClick={() => handleSave(record.id as number)}>Save</Button>
               <Button onClick={handleCancel}>Cancel</Button>
             </Space>
           ) : (
-            <Button onClick={() => handleEdit(record.id, record.result)}>Edit</Button>
+            <Button onClick={() => handleEdit(record.id as number, record.result.toString())}>Edit</Button>
           )
+      },
+      {
+        title: 'Feedback',
+        key: 'feedback',
+        render: (_, record) => (
+          <Button
+            onClick={() => {
+              setOpenModalFeedback(true)
+              setDetailFeebackData({
+                studentName: userRecord?.fullName,
+                examName: record?.exam?.name,
+                examResultFeedbacks: record?.feedbacks
+              })
+            }}
+          >
+            View ({record?.feedbacks?.length} feedbacks)
+          </Button>
         )
       }
     ]
 
-    return <Table rowKey={'id'} columns={columns} dataSource={record.examResults} pagination={false} />
+    return <Table rowKey={'id'} columns={columns} dataSource={userRecord.examResults} pagination={false} />
   }
 
   return (
     <div>
-      <EnterResultModal open={openModal} setOpen={setOpenModal} data={dataUpdateResult} onHandleUpdateSuccess={onHandleUpdateSuccess}/>
+      <FeedbackModal open={openModalFeedback} setOpen={setOpenModalFeedback} detailFeedbackData={detailFeedbackData} />
+
+      <EnterResultModal
+        open={openModal}
+        setOpen={setOpenModal}
+        data={dataUpdateResult}
+        onHandleUpdateSuccess={onHandleUpdateSuccess}
+      />
       <DataTable<IUserList>
         valueSearch={searchTerm}
         onChangeSearch={handleChange}
         onReset={handleReset}
         onSearch={handleSearch}
-        columns={columns({onUpdate}) as ColumnsType<AnyObject> | undefined}
+        columns={columns({ onUpdate }) as ColumnsType<AnyObject> | undefined}
         rowKey={'id'}
         dataSource={studentsData}
         isLoading={isLoading}

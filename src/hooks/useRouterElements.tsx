@@ -12,6 +12,7 @@ import Student from '@/page/student'
 import Teacher from '@/page/teacher'
 import ClassEnrollment from '@/page/class-enrollment'
 import ClassExamResult from '@/page/class-exam-result'
+import StudentExamResult from '@/page/student-exam-result'
 
 export default function useRoutesElements() {
   const { isAuthenticated, profile } = useContext<AppContextType>(AppContext)
@@ -72,6 +73,14 @@ export default function useRoutesElements() {
           element: (
             <ProtectedRoute>
               <Teacher />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: 'student-exam-result',
+          element: (
+            <ProtectedRoute>
+              <StudentExamResult />
             </ProtectedRoute>
           )
         }
