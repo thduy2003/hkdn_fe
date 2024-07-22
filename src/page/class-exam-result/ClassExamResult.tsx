@@ -2,23 +2,32 @@ import { classApi } from '@/api/class.api'
 import { IUserList, UserListConfig } from '@/interface/user'
 import { useQuery } from '@tanstack/react-query'
 import { Button, Col, Input, Row, Select, Space, TableColumnsType, TablePaginationConfig } from 'antd'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import DataTable from '@/components/DataTable'
 import Table, { ColumnsType } from 'antd/es/table'
 import { AnyObject } from 'antd/es/_util/type'
 import { columns } from './table-column'
 import { ExpandedRowRender } from 'rc-table/lib/interface'
-import EnterResultModal from './modal'
 import { EnterResultModalProps } from './modal/EnterResult.modal'
 import { toast } from 'sonner'
 import FeedbackModal, { IDetailFeedbackData } from '../student-exam-result/modal/Feedback.modal'
 import { IExamResult } from '@/interface/exam-result'
-const { Option } = Select
+import {AddExamModal, EnterResultModal} from './modal'
+import { examApi } from '@/api/exam.api'
+import { ClassListConfig } from '@/interface/class'
+import { AppContext, AppContextType } from '@/contexts/app.context'
+import { useLocation } from 'react-router-dom'
 export default function ClassExamResult() {
+  const { profile } = useContext<AppContextType>(AppContext)
+
+  const location = useLocation()
+  
+
   const [currentPage, setCurrentPage] = useState(1)
   const [studentsData, setStudentsData] = useState<IUserList[]>([])
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [openModalFeedback, setOpenModalFeedback] = useState<boolean>(false)
+  const [openModalExam, setOpenModalExam] = useState<boolean>(false)
   const [dataUpdateResult, setDataUpdateResult] = useState<EnterResultModalProps>({
     studentId: undefined,
     className: '',
@@ -44,7 +53,7 @@ export default function ClassExamResult() {
     studentName: '',
     examResultFeedbacks: []
   })
-
+   
   const [editingKey, setEditingKey] = useState<number | undefined>(undefined)
   const [editValue, setEditValue] = useState<string>('')
   const queryConfig: UserListConfig = {
@@ -65,6 +74,21 @@ export default function ClassExamResult() {
     queryKey: ['class-detail', selectedClass],
     queryFn: () => classApi.getClassDetail(selectedClass)
   })
+  //Load exams here to optimize the number of API calls for getting exams each time we open the modal.
+  const { data: examsData } = useQuery({
+    queryKey: ['exams'],
+    queryFn: () => examApi.getExams()
+  })
+  const classqueryConfig: ClassListConfig = {
+    page_size: 100,
+    page: 1,
+    teacherId: profile?.id
+  }
+  const {data: classesData, isLoading: isClassesLoading} = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classApi.getClassesByTeacher(classqueryConfig)
+  })
+
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setCurrentPage(pagination.current || 1)
     setPageSize(pagination.pageSize || 6)
@@ -134,6 +158,36 @@ export default function ClassExamResult() {
       setStudentsData(fetchStudentsData?.data?.data)
     }
   }, [fetchStudentsData])
+
+  useEffect(() => {
+    if(classesData?.data?.data) {
+      setSelectedClass(classesData?.data?.data[0].id)
+    }
+  }, [classesData?.data?.data])
+
+  useEffect(() => {
+    if (location.search) {
+      const params = new URLSearchParams(location.search)
+      const classId = params.get('classId')
+      const studentId = params.get('studentId')
+      const examResultId = params.get('examResultId')
+      if (classId && studentId && examResultId) {
+        const studentData = studentsData.find(student => {
+          return student.id === Number(studentId)
+        })
+        const examResultData = studentData && studentData?.examResults?.find((examResult) => {
+          return examResult.id === Number(examResultId)
+        })
+        const feedbacksData = examResultData?.feedbacks
+        setOpenModalFeedback(true)
+        setDetailFeebackData({
+          studentName: studentData?.fullName,
+          examName: examResultData?.exam?.name,
+          examResultFeedbacks: feedbacksData
+        })
+      }
+    }
+  }, [location.search, studentsData])
   const customSearchFrom = () => {
     return (
       <Row gutter={[16, 16]} className='items-center'>
@@ -146,11 +200,13 @@ export default function ClassExamResult() {
             }}
             // allowClear
             className='w-full'
-            defaultValue={1}
+            defaultValue={selectedClass}
+            options={(classesData?.data?.data || []).map((d) => ({
+              value: d.id,
+              label: d.name
+            }))}
+            loading={isClassesLoading}
           >
-            <Option value={1}>BI001</Option>
-            <Option value={2}>BI002</Option>
-            <Option value={4}>DS001</Option>
           </Select>
         </Col>
       </Row>
@@ -243,7 +299,10 @@ export default function ClassExamResult() {
         setOpen={setOpenModal}
         data={dataUpdateResult}
         onHandleUpdateSuccess={onHandleUpdateSuccess}
+        examsData={classData?.data?.exams}
       />
+
+      <AddExamModal open={openModalExam} setOpen={setOpenModalExam} classId={selectedClass} examsData={examsData?.data?.data}/>
       <DataTable<IUserList>
         valueSearch={searchTerm}
         onChangeSearch={handleChange}
@@ -263,6 +322,18 @@ export default function ClassExamResult() {
         expandable={{
           expandedRowRender: expandedRowRender as ExpandedRowRender<IUserList>,
           defaultExpandAllRows: true
+        }}
+        addButtonRender={() => {
+          return (
+            <Button
+              onClick={() => {
+                setOpenModalExam(true)
+              }}
+              type='primary'
+            >
+              Add exams
+            </Button>
+          )
         }}
       />
       <div>

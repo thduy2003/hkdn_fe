@@ -41,14 +41,14 @@ export class Http {
     })
     this.instance.interceptors.request.use(
       async (config) => {
+        console.log('1', config.url)
         if (this.AccessToken && config.headers) {
           const expiredAt = getTokenExpiredFromLS()
           this.isTokenExpired = moment(new Date(Number(expiredAt) * 1000)).isBefore(new Date())
           if (this.isTokenExpired && config.url !== '/auth/refresh-token/') {
-            console.log('4')
             if (!this.isRefreshToken) {
-              console.log('3')
               this.isRefreshToken = true
+              console.log('2')
               try {
                 const data = await this.instance.get<LoginResponse>('/auth/refresh-token/')
 
@@ -94,7 +94,7 @@ export class Http {
           setTokenExpiredToLS(data.expired_at)
           setProfileToLS(data.user)
         } else if (url === '/auth/logout/') {
-          console.log('1')
+          console.log('3')
           this.AccessToken = ''
           clearLS()
         }

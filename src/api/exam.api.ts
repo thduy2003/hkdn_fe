@@ -6,6 +6,6 @@ export const examApi = {
     getExams(): Promise<DataResponse<PageData<IExam>>> {
       const url = `/exams/`
       return http.get(url)
-    },
+    }
 }
   

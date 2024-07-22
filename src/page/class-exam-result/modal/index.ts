@@ -1,2 +1,3 @@
 import EnterResultModal from './EnterResult.modal'
-export default EnterResultModal
+import AddExamModal from './AddExam.modal'
+export {EnterResultModal, AddExamModal}

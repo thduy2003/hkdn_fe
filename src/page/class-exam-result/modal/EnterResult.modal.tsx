@@ -2,15 +2,15 @@ import { classApi } from '@/api/class.api'
 import ModalComponent from '@/components/Modal'
 import { ModalProps } from '@/interface/app'
 import { IUpdateExamResult } from '@/interface/exam-result'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { Button, Col, DatePicker, Form, Input, Row, Select } from 'antd'
 import { DefaultOptionType } from 'antd/es/select'
 import { useContext, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { customAlphabet } from 'nanoid'
-import { examApi } from '@/api/exam.api'
 import socket from '@/socket'
 import { AppContext, AppContextType } from '@/contexts/app.context'
+import { IExam } from '@/interface/exam'
 const nanoid = customAlphabet('1234567890', 20)
 interface FormData {
   result: number
@@ -26,8 +26,9 @@ export interface EnterResultModalProps {
 interface Props {
   data: EnterResultModalProps
   onHandleUpdateSuccess: (data: { examName: string; result: number; id: string; studentId: number }) => void
+  examsData: IExam[] | undefined
 }
-export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSuccess }: ModalProps & Props) {
+export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSuccess, examsData }: ModalProps & Props) {
   const { profile } = useContext<AppContextType>(AppContext)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -40,10 +41,6 @@ export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSu
     form.resetFields()
     setOpen(false)
   }
-  const { data: examsData } = useQuery({
-    queryKey: ['exams'],
-    queryFn: () => examApi.getExams()
-  })
   const enterResult = useMutation({
     mutationKey: ['enter-result'],
     mutationFn: (data: IUpdateExamResult) => classApi.enterResult(data)
@@ -84,8 +81,8 @@ export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSu
     )
   }
   useEffect(() => {
-    if (examsData?.data?.data[0]?.name) {
-      setExamName(examsData?.data?.data[0]?.name)
+    if (examsData && examsData[0]?.name) {
+      setExamName(examsData[0]?.name)
     }
   }, [examsData])
   const formContentRender = () => {
@@ -107,7 +104,7 @@ export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSu
         <Form.Item<FormData>
           label='Exam'
           name='examId'
-          initialValue={examsData?.data?.data[0]?.id}
+          initialValue={examsData && examsData[0]?.id}
           rules={[{ required: true, message: 'Please input your password!' }]}
         >
           <Select
@@ -117,9 +114,9 @@ export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSu
                 setExamName((options as DefaultOptionType).children?.toString() as string)
               }
             }}
-            options={(examsData?.data?.data || []).map((d) => ({
+            options={(examsData || []).map((d) => ({
               value: d.id,
-              label: d.name
+              label: d.name + ' - ' + d.type
             }))}
           ></Select>
         </Form.Item>

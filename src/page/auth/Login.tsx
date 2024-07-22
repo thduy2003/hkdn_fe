@@ -4,11 +4,10 @@ import { AppContext, AppContextType } from '@/contexts/app.context'
 import { UserRole } from '@/interface/user'
 import { Account } from '@/redux/authSaga'
 import { useMutation } from '@tanstack/react-query'
-import { Button, Form, Typography } from 'antd'
+import { Button, Form } from 'antd'
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-const { Text } = Typography
 type FieldType = {
   email?: string
   password?: string
@@ -41,11 +40,10 @@ export default function Login() {
         }
 
         toast.success('Login successfully', {
-          cancel: true,
-          duration: 100
+          closeButton: true
         })
       },
-      onError: (error) => {
+      onError: () => {
         setIsLoading(false)
       }
     })

@@ -1,5 +1,6 @@
 import { BaseConfig } from './app'
 import { IClassEnrollment } from './class-enrollment'
+import { IExam } from './exam'
 import { IExamResult } from './exam-result'
 import { IUser } from './user'
 
@@ -11,5 +12,8 @@ export interface IClass {
   teacher?: IUser
   classEnrollments?: IClassEnrollment[]
   examResults?: IExamResult[]
+  exams?: IExam[]
 }
-export interface ClassListConfig extends BaseConfig {}
+export interface ClassListConfig extends BaseConfig {
+  teacherId?: number
+}

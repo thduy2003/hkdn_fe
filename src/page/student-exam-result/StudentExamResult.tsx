@@ -121,7 +121,8 @@ export default function StudentExamResult() {
                   className: examResultClasses?.name,
                   deadlineFeedback: record?.deadlineFeedback,
                   examResultFeedbacks: record?.feedbacks,
-                  teacherId: examResultClasses?.teacher?.id
+                  teacherId: examResultClasses?.teacher?.id,
+                  classId: examResultClasses?.id
                 })
               }}
             >

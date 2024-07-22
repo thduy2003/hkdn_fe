@@ -23,6 +23,7 @@ export interface IDetailFeedbackData {
   deadlineFeedback?: Date
   examResultFeedbacks?: IFeedback[]
   teacherId?: number
+  classId?: number
 }
 export interface FeedbackModalProps {
   detailFeedbackData: IDetailFeedbackData
@@ -59,7 +60,10 @@ export default function FeedbackModal({ open, setOpen, detailFeedbackData }: Mod
           toast.success('Submitted feedback successfully')
           socket.emit('send_notification', {
             receiver_id: detailFeedbackData.teacherId,
-            content: `Student: ${profile?.fullName} has submitted a feedback for the exam: ${detailFeedbackData.examName}`
+            content: `Student: ${profile?.fullName} has submitted a feedback for the exam: ${detailFeedbackData?.examName} in the class: ${detailFeedbackData?.className}`,
+            classId: detailFeedbackData?.classId,
+            studentId: profile?.id,
+            examResultId: detailFeedbackData?.examResultId
           })
           /**
            * By doing this, it will directly reference the feedback data of the exam result for which we are creating feedback within the entire ExamResultClasses data. This approach optimizes the number of API calls to ExamResultClasses. The new feedback data will immediately display in the modal and also in the feedback modals of other exam results.
@@ -131,6 +135,10 @@ export default function FeedbackModal({ open, setOpen, detailFeedbackData }: Mod
   }
   const onCancel = () => {
     setOpen(false)
+    setFeedback({
+      content: '',
+      createdAt: new Date()
+    })
   }
 
   return (
