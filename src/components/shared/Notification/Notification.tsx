@@ -27,28 +27,30 @@ export default function Notification() {
     page: 1,
     userId: profile?.id
   }
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addQueryParams = (params: any) => {
-    const searchParams = new URLSearchParams(location.search);
+    const searchParams = new URLSearchParams(location.search)
 
     // Add or update query parameters
-    Object.keys(params).forEach(key => {
-      searchParams.set(key, params[key]);
-    });
-
+    Object.keys(params).forEach((key) => {
+      searchParams.set(key, params[key])
+    })
     // Use navigate to change the URL
-    navigate({
-      pathname: location.pathname,
-      search: searchParams.toString()
-    }, { replace: true });
-  };
+    navigate(
+      {
+        pathname: searchParams.get('studentId') ? `/admin/class/${searchParams.get('classId')}` : '',
+        search: searchParams.toString()
+      },
+      { replace: true }
+    )
+  }
 
   const handleOpenNotification = (data: INotification) => {
-    console.log('data', data)
     addQueryParams(data.metadata)
+    setOpen(false)
   }
   const { data: fetchNotificationData } = useQuery({
     queryKey: ['notifications'],
@@ -89,7 +91,11 @@ export default function Notification() {
           {notificationData && notificationData?.length > 0 ? (
             notificationData?.map((item) => {
               return (
-                <div key={item.id} className='flex gap-2 p-2 hover:bg-gray-100 cursor-pointer' onClick={() => handleOpenNotification(item)}>
+                <div
+                  key={item.id}
+                  className='flex gap-2 p-2 hover:bg-gray-100 cursor-pointer'
+                  onClick={() => handleOpenNotification(item)}
+                >
                   <div className='flex-shrink-0 flex items-center'>
                     <MdMessage className='size-10' />
                   </div>

@@ -11,7 +11,6 @@ import { authApi } from '@/api/auth.api'
 import { toast } from 'sonner'
 import Notification from '@/components/shared/Notification'
 
-
 const { Header, Sider, Content } = Layout
 
 const App: React.FC = () => {
@@ -22,7 +21,6 @@ const App: React.FC = () => {
   const [marginLeft, setMarginLeft] = useState<string>('15%')
   const [menuItems, setMenuItems] = useState<MenuProps['items']>([])
   const [activeMenu, setActiveMenu] = useState('')
-
 
   const logOutMutation = useMutation({
     mutationFn: authApi.logout
@@ -39,7 +37,6 @@ const App: React.FC = () => {
     })
   }
 
-  
   const onClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'logout') {
       handleLogout()
@@ -74,8 +71,13 @@ const App: React.FC = () => {
     }
   }, [profile])
   React.useEffect(() => {
-    setActiveMenu(location.pathname)
-  }, [location])
+    const subMenu = menuItems?.find((item) => item?.key === location.pathname)
+    if (subMenu) {
+      setActiveMenu(subMenu?.key?.toString() as string)
+    } else {
+      setActiveMenu(location.pathname.substring(0, location.pathname.length - 2))
+    }
+  }, [location, menuItems])
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken()
@@ -84,7 +86,6 @@ const App: React.FC = () => {
     setMarginLeft(collapsed ? '0' : '15%')
   }, [collapsed])
 
-  
   return (
     <>
       <Header
@@ -104,7 +105,7 @@ const App: React.FC = () => {
           }}
         />
         <div className='flex items-center jusitfy-center gap-3'>
-          <Notification/>
+          <Notification />
           <Dropdown menu={{ items: itemsDropdown, onClick }} trigger={['click']} className='px-4'>
             <Space style={{ cursor: 'pointer' }}>
               {/* Welcome {profile?.fullName} */}

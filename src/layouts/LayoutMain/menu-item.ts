@@ -20,15 +20,15 @@ export const routes: RouteInfo[] = [
     icon: 'zmdi zmdi-view-dashboard',
     allowedGroups: [UserRole.Employee]
   },
+  // {
+  //   path: '/admin/class/${id}',
+  //   title: 'Class Detail',
+  //   icon: 'zmdi zmdi-view-dashboard',
+  //   allowedGroups: [UserRole.Teacher]
+  // },
   {
-    path: '/admin/class-exam-result',
-    title: 'Class Exam Result',
-    icon: 'zmdi zmdi-view-dashboard',
-    allowedGroups: [UserRole.Teacher]
-  },
-  {
-    path: '/admin/teachers',
-    title: 'Teacher',
+    path: '/admin/class',
+    title: 'Classes',
     icon: 'zmdi zmdi-view-dashboard',
     allowedGroups: [UserRole.Teacher]
   },

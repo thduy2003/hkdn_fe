@@ -9,10 +9,10 @@ import Home from '@/page/Home'
 import { useContext } from 'react'
 import { Navigate, useLocation, useRoutes } from 'react-router-dom'
 import Student from '@/page/student'
-import Teacher from '@/page/teacher'
 import ClassEnrollment from '@/page/class-enrollment'
 import ClassExamResult from '@/page/class-exam-result'
 import StudentExamResult from '@/page/student-exam-result'
+import Class from '@/page/class'
 
 export default function useRoutesElements() {
   const { isAuthenticated, profile } = useContext<AppContextType>(AppContext)
@@ -21,7 +21,7 @@ export default function useRoutesElements() {
   }
   const RoleBaseRoute = ({ children }: { children: React.ReactNode }) => {
     const location = useLocation()
-    const route = routes.find((route) => route.path === location.pathname)
+    const route = routes.find((route) => route.path === location.pathname || location.pathname.startsWith(route.path))
     const check = route ? route.allowedGroups?.indexOf(profile?.role as string) !== -1 : false
     if (check) {
       return children
@@ -61,7 +61,7 @@ export default function useRoutesElements() {
           )
         },
         {
-          path: 'class-exam-result',
+          path: 'class/:id',
           element: (
             <ProtectedRoute>
               <ClassExamResult />
@@ -69,10 +69,10 @@ export default function useRoutesElements() {
           )
         },
         {
-          path: 'teachers',
+          path: 'class',
           element: (
             <ProtectedRoute>
-              <Teacher />
+              <Class />
             </ProtectedRoute>
           )
         },
