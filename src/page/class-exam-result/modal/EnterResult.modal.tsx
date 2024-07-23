@@ -28,7 +28,13 @@ interface Props {
   onHandleUpdateSuccess: (data: { examName: string; result: number; id: string; studentId: number }) => void
   examsData: IExam[] | undefined
 }
-export default function EnterResultModal({ open, setOpen, data, onHandleUpdateSuccess, examsData }: ModalProps & Props) {
+export default function EnterResultModal({
+  open,
+  setOpen,
+  data,
+  onHandleUpdateSuccess,
+  examsData
+}: ModalProps & Props) {
   const { profile } = useContext<AppContextType>(AppContext)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

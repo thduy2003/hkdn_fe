@@ -1,16 +1,17 @@
-import ModalComponent from "@/components/Modal";
-import { ModalProps } from "@/interface/app";
-import { Button, Col, Form, Input, Row, Select } from "antd";
-const {Option} = Select
-export default function AddStudentModal({open, setOpen}: ModalProps) {
-    const onSubmitForm = (values: any) => {
-        console.log('Success:', values);
-      };
-      const customTitle = () => {
-        return <p>Thêm sinh viên</p>
-      }
-      const formContentRender = () => {
-        return  <Form
+import ModalComponent from '@/components/Modal'
+import { ModalProps } from '@/interface/app'
+import { Button, Col, Form, Input, Row, Select } from 'antd'
+const { Option } = Select
+export default function AddStudentModal({ open, setOpen }: ModalProps) {
+  const onSubmitForm = (values: any) => {
+    console.log('Success:', values)
+  }
+  const customTitle = () => {
+    return <p>Thêm sinh viên</p>
+  }
+  const formContentRender = () => {
+    return (
+      <Form
         name='basic'
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 24 }}
@@ -39,7 +40,7 @@ export default function AddStudentModal({open, setOpen}: ModalProps) {
             <Option value={4}>DS001</Option>
           </Select>
         </Form.Item>
-    
+
         <Form.Item<any>
           label='Student'
           className='mb-0'
@@ -48,7 +49,7 @@ export default function AddStudentModal({open, setOpen}: ModalProps) {
         >
           <Input />
         </Form.Item>
-        <Row className='flex justify-end' gutter={[15,15]}>
+        <Row className='flex justify-end mt-4' gutter={[15, 15]}>
           <Col>
             <Button
               type='default'
@@ -66,8 +67,9 @@ export default function AddStudentModal({open, setOpen}: ModalProps) {
           </Col>
         </Row>
       </Form>
-      }
-      return (
-        <ModalComponent customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen}/>
-      )
+    )
+  }
+  return (
+    <ModalComponent customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen} />
+  )
 }

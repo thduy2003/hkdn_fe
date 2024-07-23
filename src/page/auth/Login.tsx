@@ -32,7 +32,7 @@ export default function Login() {
             navigate('/admin/students')
             break
           case UserRole.Teacher:
-            navigate('/admin/teachers')
+            navigate('/admin/class')
             break
           default:
             navigate('/admin')

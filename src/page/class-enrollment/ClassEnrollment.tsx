@@ -1,26 +1,43 @@
 import DataTable from '@/components/DataTable'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Button, Col, Row, Select, TablePaginationConfig } from 'antd'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { columns } from './table-column'
 import { ColumnsType } from 'antd/es/table'
 import { AnyObject } from 'antd/es/_util/type'
 import ClassEnrollmentModal from './modal'
 import { classApi } from '@/api/class.api'
-import { UserListConfig } from '@/interface/user'
+import { UserListConfig, UserRole } from '@/interface/user'
 import { userApi } from '@/api/user.api'
 import { toast } from 'sonner'
-const { Option } = Select
+import { ClassListConfig } from '@/interface/class'
+import useDebounceState from '@/hooks/useDebounce'
 
 export default function ClassEnrollment() {
   const [currentPage, setCurrentPage] = useState(1)
   const [openModal, setOpenModal] = useState(false)
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, debouncedSearchTerm, setSearchTerm] = useDebounceState('', 300)
   const [pageSize, setPageSize] = useState(10)
-  const [searchTerm, setSearchTerm] = useState<string>('')
+  const [searchValue, setSearchValue] = useState<string>('')
   const [selectedClass, setSelectedClass] = useState(1)
-  const queryConfig: UserListConfig = { page_size: pageSize, page: currentPage, ...(searchTerm ? { keyword: searchTerm } : {})}
+  const queryConfig: UserListConfig = {
+    page_size: pageSize,
+    page: currentPage,
+    ...(searchValue ? { keyword: searchValue } : {})
+  }
 
+  const queryStudentConfig: UserListConfig = {
+    page_size: 1000,
+    page: 1,
+    role: UserRole.Student,
+    ...(debouncedSearchTerm ? { keyword: debouncedSearchTerm } : {})
+  }
+
+  const { data: usersData } = useQuery({
+    queryKey: ['users', debouncedSearchTerm],
+    queryFn: () => userApi.getUsers(queryStudentConfig)
+  })
   const {
     data: studentsData,
     isLoading,
@@ -29,11 +46,18 @@ export default function ClassEnrollment() {
     queryKey: ['students-in-class', selectedClass],
     queryFn: () => classApi.getStudentsInClass(selectedClass, queryConfig)
   })
-  const {
-    data: classData,
-  } = useQuery({
+  const { data: classData } = useQuery({
     queryKey: ['class-detail', selectedClass],
     queryFn: () => classApi.getClassDetail(selectedClass)
+  })
+  const classqueryConfig: ClassListConfig = {
+    page_size: pageSize,
+    page: currentPage,
+    ...(searchValue ? { keyword: searchValue } : {})
+  }
+  const { data: classesData, isLoading: isClassesLoading } = useQuery({
+    queryKey: ['classes'],
+    queryFn: () => classApi.getClassesByTeacher(classqueryConfig)
   })
 
   const handleTableChange = (pagination: TablePaginationConfig) => {
@@ -41,7 +65,7 @@ export default function ClassEnrollment() {
     setPageSize(pagination.pageSize || 6)
   }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
+    setSearchValue(e.target.value)
   }
   const handleSearch = () => {
     setCurrentPage(1)
@@ -49,15 +73,14 @@ export default function ClassEnrollment() {
   }
   const handleReset = () => {
     setCurrentPage(1)
-    setSearchTerm('')
+    setSearchValue('')
     setTimeout(() => {
       refetch()
     }, 0)
   }
   const enrollClass = useMutation({
     mutationKey: ['unenroll-class'],
-    mutationFn: (studentId: number) =>
-      userApi.unenrollClass({ classId: selectedClass, studentId: studentId })
+    mutationFn: (studentId: number) => userApi.unenrollClass({ classId: selectedClass, studentId: studentId })
   })
 
   const onDelete = (studentId: number) => {
@@ -83,25 +106,37 @@ export default function ClassEnrollment() {
             }}
             // allowClear
             className='w-full'
-            defaultValue={1}
-          >
-            <Option value={1}>BI001</Option>
-            <Option value={2}>BI002</Option>
-            <Option value={4}>DS001</Option>
-          </Select>
+            value={selectedClass}
+            loading={isClassesLoading}
+            options={(classesData?.data?.data || []).map((d) => ({
+              value: d.id,
+              label: d.name
+            }))}
+          ></Select>
         </Col>
       </Row>
     )
   }
+  useEffect(() => {
+    if (classesData?.data?.data) {
+      setSelectedClass(classesData?.data?.data[0]?.id)
+    }
+  }, [classesData?.data?.data])
   return (
     <div>
-      <ClassEnrollmentModal open={openModal} setOpen={setOpenModal} />
+      <ClassEnrollmentModal
+        setSearchTerm={setSearchTerm}
+        usersData={usersData?.data?.data || []}
+        classId={selectedClass}
+        open={openModal}
+        setOpen={setOpenModal}
+      />
       <DataTable
-        valueSearch={searchTerm}
+        valueSearch={searchValue}
         onChangeSearch={handleChange}
         onReset={handleReset}
         onSearch={handleSearch}
-        columns={columns({onDelete}) as ColumnsType<AnyObject> | undefined}
+        columns={columns({ onDelete }) as ColumnsType<AnyObject> | undefined}
         rowKey={'id'}
         dataSource={studentsData?.data?.data}
         isLoading={isLoading}
@@ -125,8 +160,12 @@ export default function ClassEnrollment() {
         }}
         customSearchFrom={customSearchFrom}
       />
-      <div>Teacher: <strong>{classData?.data?.teacher?.fullName}</strong></div>
-      <div>Class Name: <strong>{classData?.data?.name}</strong></div>
+      <div>
+        Teacher: <strong>{classData?.data?.teacher?.fullName}</strong>
+      </div>
+      <div>
+        Class Name: <strong>{classData?.data?.name}</strong>
+      </div>
     </div>
   )
 }

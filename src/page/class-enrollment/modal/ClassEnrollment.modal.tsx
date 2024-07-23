@@ -1,55 +1,57 @@
 import { userApi } from '@/api/user.api'
 import ModalComponent from '@/components/Modal'
-import useDebounceState from '@/hooks/useDebounce'
 import { ModalProps } from '@/interface/app'
 import { IClassEnrollment } from '@/interface/class-enrollment'
-import { UserListConfig } from '@/interface/user'
+import { IUserList } from '@/interface/user'
 import AddStudentModal from '@/page/student/modal'
-import { InvalidateQueryFilters, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { InvalidateQueryFilters, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Col, Form, Row, Select } from 'antd'
 import { useState } from 'react'
 import { toast } from 'sonner'
-const { Option } = Select
-
-export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
+export interface IClassEnrollmentModalProps {
+  setSearchTerm: (value: string) => void
+  usersData: IUserList[]
+  classId: number
+}
+export default function ClassEnrollmentModal({
+  open,
+  setOpen,
+  setSearchTerm,
+  usersData,
+  classId
+}: ModalProps & IClassEnrollmentModalProps) {
   const [openStudentModal, setOpenStudentModal] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, debouncedSearchTerm, setSearchTerm] = useDebounceState('', 300)
-  const [form] = Form.useForm();
+
+  const [form] = Form.useForm()
 
   const queryClient = useQueryClient()
 
-  const queryConfig: UserListConfig = {
-    page_size: 10,
-    page: 1,
-    ...(debouncedSearchTerm ? { keyword: debouncedSearchTerm } : {})
-  }
-
-  const { data: usersData } = useQuery({
-    queryKey: ['users', debouncedSearchTerm],
-    queryFn: () => userApi.getUsers(queryConfig)
-  })
   const enrollClass = useMutation({
     mutationKey: ['enrollClass'],
-    mutationFn: (value: IClassEnrollment) =>
-      userApi.enrollClass({ classId: value.classId, studentId: value.studentId })
+    mutationFn: (value: IClassEnrollment) => userApi.enrollClass({ classId: value.classId, studentId: value.studentId })
   })
 
   const onSubmitForm = (value: IClassEnrollment) => {
-    enrollClass.mutate(value, {
-      onSuccess: () => {
-        toast.success('Enrolled class successfully')
-        queryClient.invalidateQueries(['class-enrollment'] as InvalidateQueryFilters)
-        setOpen(false)
-        form.resetFields()
+    enrollClass.mutate(
+      {
+        ...value,
+        classId
       },
-      onError: (error: unknown) => {
-        console.log(error)
+      {
+        onSuccess: () => {
+          toast.success('Enrolled class successfully')
+          queryClient.invalidateQueries(['class-enrollment'] as InvalidateQueryFilters)
+          setOpen(false)
+          form.resetFields()
+        },
+        onError: (error: unknown) => {
+          console.log(error)
+        }
       }
-    })
+    )
   }
   const customTitle = () => {
-    return <p>Thêm mới học sinh vào lớp</p>
+    return <p>Add new student to the class</p>
   }
   const onCancel = () => {
     form.resetFields()
@@ -68,27 +70,6 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
         autoComplete='off'
       >
         <Form.Item<IClassEnrollment>
-          label='Lớp học'
-          name='classId'
-          initialValue={4}
-          rules={[{ required: true, message: 'Please input your username!' }]}
-        >
-          <Select
-            // placeholder="Select a option and change input text above"
-            // onChange={(val) => {
-            //   setTimeout(() => {
-            //   }, 0)
-            // }}
-            // allowClear
-            className='w-full'
-          >
-            <Option value={1}>BI001</Option>
-            <Option value={2}>BI002</Option>
-            <Option value={4}>DS001</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item<IClassEnrollment>
           label='Student'
           className='mb-0'
           name='studentId'
@@ -104,7 +85,7 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
               setSearchTerm(value)
             }}
             notFoundContent={null}
-            options={(usersData?.data?.data || []).map((d) => ({
+            options={(usersData || []).map((d) => ({
               value: d.id,
               label: d.fullName
             }))}
@@ -135,6 +116,12 @@ export default function ClassEnrollmentModal({ open, setOpen }: ModalProps) {
     )
   }
   return (
-    <ModalComponent customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen} onCancel={onCancel} />
+    <ModalComponent
+      customTitle={customTitle}
+      formContentRender={formContentRender}
+      open={open}
+      setOpen={setOpen}
+      onCancel={onCancel}
+    />
   )
 }
