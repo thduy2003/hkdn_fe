@@ -35,9 +35,11 @@ export default function Notification() {
     const searchParams = new URLSearchParams(location.search)
 
     // Add or update query parameters
-    Object.keys(params).forEach((key) => {
-      searchParams.set(key, params[key])
-    })
+    if(params) {
+      Object.keys(params).forEach((key) => {
+        searchParams.set(key, params[key])
+      })
+    }
     // Use navigate to change the URL
     navigate(
       {

@@ -18,7 +18,7 @@ import { useLocation, useParams } from 'react-router-dom'
 export default function ClassExamResult() {
   const { id } = useParams()
   const location = useLocation()
-
+  const [expandedRowKeys, setExpandedRowKeys] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [studentsData, setStudentsData] = useState<IUserList[]>([])
   const [openModal, setOpenModal] = useState<boolean>(false)
@@ -146,6 +146,7 @@ export default function ClassExamResult() {
   useEffect(() => {
     if (fetchStudentsData?.data?.data) {
       setStudentsData(fetchStudentsData?.data?.data)
+      setExpandedRowKeys([fetchStudentsData?.data?.data[0]?.id])
     }
   }, [fetchStudentsData])
 
@@ -171,6 +172,7 @@ export default function ClassExamResult() {
           examName: examResultData?.exam?.name,
           examResultFeedbacks: feedbacksData
         })
+        setExpandedRowKeys([Number(studentId)])
       }
     }
   }, [location.search, fetchStudentsData?.data?.data])
@@ -322,7 +324,10 @@ export default function ClassExamResult() {
         onChange={handleTableChange}
         expandable={{
           expandedRowRender: expandedRowRender as ExpandedRowRender<IUserList>,
-          defaultExpandAllRows: true
+          expandedRowKeys: expandedRowKeys,
+          onExpand: (expanded, record) => {
+            setExpandedRowKeys(expanded ? [record.id] : [])
+          }
         }}
         addButtonRender={() => {
           return (

@@ -17,6 +17,8 @@ export default function StudentExamResult() {
   const { profile } = useContext<AppContextType>(AppContext)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [expandedRowKeys, setExpandedRowKeys] = useState<number[]>([])
+
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [examResultClasses, setExamResultClasses] = useState<IClass[]>([])
   const [openModal, setOpenModal] = useState<boolean>(false)
@@ -72,8 +74,8 @@ export default function StudentExamResult() {
    */
   useEffect(() => {
     if (fetchExamResultClasses?.data?.data) {
-      console.log('fetchExamResultClasses?.data?.data', fetchExamResultClasses?.data?.data)
       setExamResultClasses(fetchExamResultClasses?.data?.data)
+      setExpandedRowKeys([fetchExamResultClasses?.data?.data[0]?.id])
     }
   }, [fetchExamResultClasses])
 
@@ -157,14 +159,17 @@ export default function StudentExamResult() {
         onChange={handleTableChange}
         expandable={{
           expandedRowRender: expandedRowRender as ExpandedRowRender<IClass>,
-          defaultExpandAllRows: true,
           // expandIcon: ({ onExpand, record }) => (
           //   <Space className='cursor-pointer' onClick={(e) => onExpand(record, e)}>
           //     View Exam Results
           //   </Space>
           // ),
           columnWidth: '150px',
-          columnTitle: 'Results Detail'
+          columnTitle: 'Results Detail',
+          expandedRowKeys: expandedRowKeys,
+          onExpand: (expanded, record) => {
+            setExpandedRowKeys(expanded ? [record.id] : [])
+          }
         }}
       />
     </div>
