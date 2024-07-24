@@ -60,7 +60,7 @@ export default function ClassEnrollmentModal({
   const formContentRender = () => {
     return (
       <Form
-        name='basic'
+        name='ClassEnrollmentForm'
         form={form}
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 24 }}

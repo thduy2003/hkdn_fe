@@ -1,6 +1,6 @@
 import { DataResponse, PageData } from '@/interface/app'
 import http from './axiosClient'
-import { IUser, UserListConfig } from '@/interface/user'
+import { IAddUser, IUser, UserListConfig } from '@/interface/user'
 import { ClassListConfig, IClass } from '@/interface/class'
 import { ICreateExamResultFeedback } from '@/interface/feedback'
 
@@ -8,6 +8,10 @@ export const userApi = {
   getUsers(params: UserListConfig): Promise<DataResponse<PageData<IUser>>> {
     const url = `/users/`
     return http.get(url, { params })
+  },
+  addUser(params: IAddUser): Promise<DataResponse<IUser>> {
+    const url = `/user/`
+    return http.post(url, params)
   },
   enrollClass(params: { classId: number; studentId: number }): Promise<DataResponse<string>> {
     const url = `/user/enroll/${params.classId}`

@@ -24,3 +24,7 @@ export interface IUserList {
 export interface UserListConfig extends BaseConfig {
   role?: UserRole
 }
+export interface IAddUser {
+  fullName: string;
+  email: string;
+}

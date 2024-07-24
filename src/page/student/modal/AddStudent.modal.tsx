@@ -1,18 +1,41 @@
+import { userApi } from '@/api/user.api'
 import ModalComponent from '@/components/Modal'
 import { ModalProps } from '@/interface/app'
-import { Button, Col, Form, Input, Row, Select } from 'antd'
-const { Option } = Select
+import { IUser } from '@/interface/user'
+import { useMutation } from '@tanstack/react-query'
+import { Button, Col, Form, Input, Row } from 'antd'
+import { toast } from 'sonner'
 export default function AddStudentModal({ open, setOpen }: ModalProps) {
-  const onSubmitForm = (values: any) => {
-    console.log('Success:', values)
+  const [form] = Form.useForm()
+  const addUser = useMutation({
+    mutationKey: ['enter-result'],
+    mutationFn: (data: IUser) => userApi.addUser(data)
+  })
+  const onSubmitForm = (values: IUser) => {
+    addUser.mutate({
+      ...values
+    }, {
+      onSuccess: () => {
+        form.resetFields()
+        toast.success('Student added successfully')
+      },
+      onError: (error) => {
+        console.error(error)
+      }
+    })
   }
   const customTitle = () => {
-    return <p>Thêm sinh viên</p>
+    return <p>Add new Student</p>
+  }
+  const onCancel = () => {
+    form.resetFields()
+    setOpen(false)
   }
   const formContentRender = () => {
     return (
       <Form
-        name='basic'
+      form={form}
+        name='addStudentForm'
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 24 }}
         style={{ maxWidth: 600 }}
@@ -20,32 +43,19 @@ export default function AddStudentModal({ open, setOpen }: ModalProps) {
         onFinish={onSubmitForm}
         autoComplete='off'
       >
-        <Form.Item<any>
-          label='Lớp học'
-          name='classId'
-          rules={[{ required: true, message: 'Please input your username!' }]}
-        >
-          <Select
-            // placeholder="Select a option and change input text above"
-            // onChange={(val) => {
-            //   setTimeout(() => {
-            //   }, 0)
-            // }}
-            // allowClear
-            className='w-full'
-            defaultValue={1}
-          >
-            <Option value={1}>BI001</Option>
-            <Option value={2}>BI002</Option>
-            <Option value={4}>DS001</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item<any>
-          label='Student'
+        <Form.Item<IUser>
+          label='Student Email'
           className='mb-0'
-          name='studentId'
-          rules={[{ required: true, message: 'Please input your password!' }]}
+          name='email'
+          rules={[{ required: true, message: 'Please enter the student\'s email' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item<IUser>
+          label='Student Name'
+          className='mb-0'
+          name='fullName'
+          rules={[{ required: true, message: 'Please enter the student\'s full name' }]}
         >
           <Input />
         </Form.Item>
@@ -70,6 +80,6 @@ export default function AddStudentModal({ open, setOpen }: ModalProps) {
     )
   }
   return (
-    <ModalComponent customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen} />
+    <ModalComponent onCancel={onCancel} customTitle={customTitle} formContentRender={formContentRender} open={open} setOpen={setOpen} />
   )
 }

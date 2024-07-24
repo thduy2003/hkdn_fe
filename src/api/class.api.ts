@@ -25,6 +25,13 @@ export const classApi = {
       deadlineFeedback: data.data.deadlineFeedback
     })
   },
+  updateResult(data: IUpdateExamResult): Promise<string> {
+    const url = `/class/${data.classId}/${data.studentId}/result`
+    return http.put(url, {
+      examId: data.data.exam.id,
+      result: data.data.result,
+    })
+  },
   addExams(params: { examIds: number[]; classId: number }): Promise<DataResponse<string>> {
     const url = `/class/${params.classId}/exam`
     return http.post(url, {examIds: params.examIds})

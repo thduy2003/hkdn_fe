@@ -1,6 +1,6 @@
 import { classApi } from '@/api/class.api'
 import { IUserList, UserListConfig } from '@/interface/user'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Button, Input, Space, TableColumnsType, TablePaginationConfig } from 'antd'
 import { useEffect, useState } from 'react'
 import DataTable from '@/components/DataTable'
@@ -11,7 +11,7 @@ import { ExpandedRowRender } from 'rc-table/lib/interface'
 import { EnterResultModalProps } from './modal/EnterResult.modal'
 import { toast } from 'sonner'
 import FeedbackModal, { IDetailFeedbackData } from '../student-exam-result/modal/Feedback.modal'
-import { IExamResult } from '@/interface/exam-result'
+import { IExamResult, IUpdateExamResult } from '@/interface/exam-result'
 import { AddExamModal, EnterResultModal } from './modal'
 import { examApi } from '@/api/exam.api'
 import { useLocation, useParams } from 'react-router-dom'
@@ -74,7 +74,11 @@ export default function ClassExamResult() {
     queryKey: ['exams'],
     queryFn: () => examApi.getExams()
   })
-
+  const updateResult = useMutation({
+    mutationKey: ['enter-result'],
+    mutationFn: (data: IUpdateExamResult) => classApi.updateResult(data)
+  })
+ 
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setCurrentPage(pagination.current || 1)
     setPageSize(pagination.pageSize || 6)
@@ -152,7 +156,7 @@ export default function ClassExamResult() {
       const studentId = params.get('studentId')
       const examResultId = params.get('examResultId')
       if (classId && studentId && examResultId) {
-        const studentData = studentsData.find((student) => {
+        const studentData = fetchStudentsData?.data?.data.find((student) => {
           return student.id === Number(studentId)
         })
         const examResultData =
@@ -169,14 +173,14 @@ export default function ClassExamResult() {
         })
       }
     }
-  }, [location.search, studentsData])
+  }, [location.search, fetchStudentsData?.data?.data])
   const expandedRowRender = (userRecord: IUserList) => {
     const handleEdit = (key: number, result: string) => {
       setEditingKey(key)
       setEditValue(result)
     }
 
-    const handleSave = (key: number) => {
+    const handleSave = (examId: number, studentId: number) => {
       // Logic to save the edited result
       // You may want to update the record in state or make an API call here
       const checkNumber = Number(editValue)
@@ -184,7 +188,42 @@ export default function ClassExamResult() {
         toast.error('Invalid result. Please enter a valid result')
         return
       }
-      setEditingKey(undefined)
+      updateResult.mutate(
+        {
+          classId: Number(id),
+          studentId: studentId,
+          data: {
+            result: Number(editValue),
+            exam: {
+              id: examId
+            }
+          }
+        },
+        {
+          onSuccess: () => {
+            toast.success('Update result successfully')
+
+            //Handle updating the exam result after updating the result without re-calling the API to get the list.
+            setStudentsData((prevStudents) =>
+              prevStudents.map((student) => {
+                if (student.id === studentId) {
+                  const editExamResult = student?.examResults?.find(x => x.exam.id === examId);
+                  if (editExamResult) {
+                    editExamResult.result = Number(editValue)
+                  }
+                }
+                
+                return student
+              })
+            )
+            setEditingKey(undefined)
+          },
+          onError: (error: unknown) => {
+            console.log(error)
+            setEditingKey(undefined)
+          }
+        }
+      )
     }
 
     const handleCancel = () => {
@@ -208,7 +247,7 @@ export default function ClassExamResult() {
           editingKey === record.id ? (
             <Input className='w-full' value={editValue} onChange={(e) => setEditValue(e.target.value)} />
           ) : (
-            record.result
+            Number.parseFloat(record.result.toString()).toFixed(2)
           )
       },
       {
@@ -218,7 +257,7 @@ export default function ClassExamResult() {
         render: (_, record) =>
           editingKey === record.id ? (
             <Space>
-              <Button onClick={() => handleSave(record.id as number)}>Save</Button>
+              <Button type='primary' onClick={() => handleSave(record.exam.id as number, userRecord.id)}>Save</Button>
               <Button onClick={handleCancel}>Cancel</Button>
             </Space>
           ) : (
