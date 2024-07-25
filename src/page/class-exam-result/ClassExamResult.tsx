@@ -15,6 +15,8 @@ import { IExamResult, IUpdateExamResult } from '@/interface/exam-result'
 import { AddExamModal, EnterResultModal } from './modal'
 import { examApi } from '@/api/exam.api'
 import { useLocation, useParams } from 'react-router-dom'
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 export default function ClassExamResult() {
   const { id } = useParams()
   const location = useLocation()
@@ -149,7 +151,61 @@ export default function ClassExamResult() {
       setExpandedRowKeys([fetchStudentsData?.data?.data[0]?.id])
     }
   }, [fetchStudentsData])
+  
+  const processData = (data: IUserList[]) => {
+    if (!data || data.length === 0) return { tableData: [], headers: [] };
+  
+    // Lấy tất cả các exam duy nhất
+    const allExams = Array.from(new Set(data.flatMap(student => 
+      student?.examResults?.map(result => result.exam.name)
+    ))).sort();
+  
+    const headers = ['ID', 'Họ và tên', ...allExams];
+  
+    const tableData = data.map(student => {
+      const row: (string | number)[] = [student.id, student.fullName];
+      allExams.forEach(examName => {
+        const result = student?.examResults?.find(r => r.exam.name === examName);
+        row.push(result ? result.result : 'N/A');
+      });
+      return row;
+    });
+  
+    return { tableData, headers };
+  };
+  
+  const generatePDF = (tableData: (string | number)[][], headers: string[]) => {
+    const doc = new jsPDF();
+  
+    doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf', 'Roboto', 'normal');
+    doc.setFont('Roboto');
+  
+   
+     // Tiêu đề chính
+    doc.setFontSize(16);
+     doc.text("Bảng điểmx", 14, 15);
 
+    // Tên lớp học
+    doc.setFontSize(12);
+    doc.text(`Lớp: ${classData?.data?.name || 'Không có thông tin'}`, 14, 25);
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (doc as any).autoTable({
+      head: [headers],
+      body: tableData,
+      startY: 35,
+      styles: { font: 'Roboto' },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      bodyStyles: { textColor: 0 },
+    });
+  
+    doc.save("bang-diem.pdf");
+  };
+  
+  const handlePdf = () => {
+    const { tableData, headers } = processData(studentsData);
+    generatePDF(tableData, headers as string[]);
+  };
   useEffect(() => {
     if (location.search) {
       const params = new URLSearchParams(location.search)
@@ -307,6 +363,7 @@ export default function ClassExamResult() {
         classId={Number(id)}
         examsData={examsData?.data?.data}
       />
+      
       <DataTable<IUserList>
         valueSearch={searchTerm}
         onChangeSearch={handleChange}
@@ -331,6 +388,7 @@ export default function ClassExamResult() {
         }}
         addButtonRender={() => {
           return (
+            <>
             <Button
               onClick={() => {
                 setOpenModalExam(true)
@@ -339,6 +397,14 @@ export default function ClassExamResult() {
             >
               Add exams
             </Button>
+            <Button
+              onClick={handlePdf}
+              type='primary'
+            >
+              In PDF
+            </Button>
+            </>
+            
           )
         }}
       />
